@@ -47,17 +47,23 @@ Claude Code → reads/writes your codebase
 
 ## Installation / 安装
 
-### One-line install / 一行安装
+### npx skills (recommended) / npx skills（推荐）
+
+```bash
+npx skills add https://github.com/op7418/Claude-to-IM-skill.git --skill claude-to-im
+```
+
+### Git clone / Git 克隆
 
 ```bash
 git clone https://github.com/op7418/Claude-to-IM-skill.git ~/.claude/skills/claude-to-im
 ```
 
-This clones the repo directly into your personal skills directory. Claude Code will discover it automatically in the next session.
+Clones the repo directly into your personal skills directory. Claude Code discovers it automatically.
 
-将仓库直接克隆到个人 Skills 目录，Claude Code 会在下次会话中自动发现。
+将仓库直接克隆到个人 Skills 目录，Claude Code 会自动发现。
 
-### Alternative: Symlink / 符号链接方式
+### Symlink / 符号链接方式
 
 If you prefer to keep the repo elsewhere (e.g., for development):
 
