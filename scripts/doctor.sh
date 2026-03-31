@@ -296,10 +296,10 @@ fi
 
 # --- Load config for channel checks ---
 if [ -f "$CONFIG_FILE" ]; then
-  CTI_CHANNELS=$(get_config CTI_ENABLED_CHANNELS)
+  CTI_ENABLED_CHANNELS=$(get_config CTI_ENABLED_CHANNELS)
 
   # --- Telegram ---
-  if echo "$CTI_CHANNELS" | grep -q telegram; then
+  if echo "$CTI_ENABLED_CHANNELS" | grep -q telegram; then
     TG_TOKEN=$(get_config CTI_TG_BOT_TOKEN)
     if [ -n "$TG_TOKEN" ]; then
       TG_RESULT=$(curl -s --max-time 5 "https://api.telegram.org/bot${TG_TOKEN}/getMe" 2>/dev/null || echo '{"ok":false}')
@@ -314,7 +314,7 @@ if [ -f "$CONFIG_FILE" ]; then
   fi
 
   # --- Feishu ---
-  if echo "$CTI_CHANNELS" | grep -q feishu; then
+  if echo "$CTI_ENABLED_CHANNELS" | grep -q feishu; then
     FS_APP_ID=$(get_config CTI_FEISHU_APP_ID)
     FS_SECRET=$(get_config CTI_FEISHU_APP_SECRET)
     FS_DOMAIN=$(get_config CTI_FEISHU_DOMAIN)
@@ -334,7 +334,7 @@ if [ -f "$CONFIG_FILE" ]; then
   fi
 
   # --- QQ ---
-  if echo "$CTI_CHANNELS" | grep -q qq; then
+  if echo "$CTI_ENABLED_CHANNELS" | grep -q qq; then
     QQ_APP_ID=$(get_config CTI_QQ_APP_ID)
     QQ_APP_SECRET=$(get_config CTI_QQ_APP_SECRET)
     if [ -n "$QQ_APP_ID" ] && [ -n "$QQ_APP_SECRET" ]; then
@@ -361,7 +361,7 @@ if [ -f "$CONFIG_FILE" ]; then
   fi
 
   # --- Discord ---
-  if echo "$CTI_CHANNELS" | grep -q discord; then
+  if echo "$CTI_ENABLED_CHANNELS" | grep -q discord; then
     DC_TOKEN=$(get_config CTI_DISCORD_BOT_TOKEN)
     if [ -n "$DC_TOKEN" ]; then
       if echo "${DC_TOKEN}" | grep -qE '^[A-Za-z0-9_-]{20,}\.'; then
@@ -375,7 +375,7 @@ if [ -f "$CONFIG_FILE" ]; then
   fi
 
   # --- Weixin ---
-  if echo "$CTI_CHANNELS" | grep -q weixin; then
+  if echo "$CTI_ENABLED_CHANNELS" | grep -q weixin; then
     WX_ACCOUNTS_FILE="$CTI_HOME/data/weixin-accounts.json"
     if [ -f "$WX_ACCOUNTS_FILE" ]; then
       WX_COUNTS=$(node -e '
