@@ -476,6 +476,12 @@ export class SDKLLMProvider implements LLMProvider {
                   stderrBuf = stderrBuf.slice(-MAX_STDERR);
                 }
               },
+              // 加载项目级和用户级设置（包括 skills、CLAUDE.md 等）                                                                                                                            
+              settingSources: ["project", "user"],                                                                                                                                              
+              // 使用 Claude Code 预设的系统提示词（包含 skill 发现逻辑）
+              systemPrompt: { type: "preset", preset: "claude_code" },                                                                                                                          
+              // 使用 Claude Code 预设的工具集（包含 Skill 工具）         
+              tools: { type: "preset", preset: "claude_code" },
               canUseTool: async (
                   toolName: string,
                   input: Record<string, unknown>,
@@ -603,6 +609,7 @@ export function handleMessage(
   controller: ReadableStreamDefaultController<string>,
   state: StreamState,
 ): void {
+
   switch (msg.type) {
     case 'stream_event': {
       const event = msg.event;
@@ -718,7 +725,6 @@ export function handleMessage(
     }
 
     default:
-      // Ignore other message types (auth_status, task_notification, etc.)
       break;
   }
 }
