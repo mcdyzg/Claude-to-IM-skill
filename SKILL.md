@@ -6,10 +6,10 @@ description: |
   or diagnosing the claude-to-im bridge daemon; forwarding Claude replies to a messaging
   app; any phrase like "claude-to-im", "bridge", "消息推送", "消息转发", "桥接",
   "连上飞书", "手机上看claude", "启动后台服务", "诊断", "查看日志", "配置".
-  Subcommands: setup, start, stop, status, logs, reconfigure, doctor.
+  Subcommands: setup, start, stop, status, logs, reconfigure, doctor, send.
   Do NOT use for: building standalone bots, webhook integrations, or coding with IM
   platform SDKs — those are regular programming tasks.
-argument-hint: "setup | start | stop | status | logs [N] | reconfigure | doctor"
+argument-hint: "setup | start | stop | status | logs [N] | reconfigure | doctor | send <open_id> <message>"
 allowed-tools:
   - Bash
   - Read
@@ -42,6 +42,7 @@ Parse the user's intent from `$ARGUMENTS` into one of these subcommands:
 | `logs`, `logs 200`, `查看日志`, `查看日志 200` | logs |
 | `reconfigure`, `修改配置`, `帮我改一下 token`, `换个 bot` | reconfigure |
 | `doctor`, `diagnose`, `诊断`, `挂了`, `没反应了`, `bot 没反应`, `出问题了` | doctor |
+| `send <open_id> <message>`, `发消息给 ou_xxx 你好`, `给飞书用户发消息` | send |
 
 **Disambiguation: `status` vs `doctor`** — Use `status` when the user just wants to check if the bridge is running (informational). Use `doctor` when the user reports a problem or suspects something is broken (diagnostic). When in doubt and the user describes a symptom (e.g., "没反应了", "挂了"), prefer `doctor`.
 
@@ -181,6 +182,28 @@ Show results and suggest fixes for any failures. Common fixes:
 - Weixin voice message reports missing speech-to-text → enable WeChat's own voice transcription and resend; the bridge does not transcribe raw voice audio itself
 
 For more complex issues (messages not received, permission timeouts, high memory, stale PID files), read `SKILL_DIR/references/troubleshooting.md` for detailed diagnosis steps.
+
+### `send`
+
+向指定飞书用户发送消息。此命令不依赖桥接守护进程，直接调用飞书开放平台 API。
+
+**参数解析：** 从 `$ARGUMENTS` 中提取 `open_id`（以 `ou_` 开头的字符串）和消息内容。如果用户没有提供完整参数，使用 AskUserQuestion 逐个询问：
+
+1. **open_id** — 飞书用户的 open_id（格式：`ou_xxxxxxx`）。提示用户可以在飞书管理后台或通过飞书 API 获取。
+2. **message** — 要发送的消息内容（纯文本）。
+
+**执行：**
+
+Run: `bash "SKILL_DIR/scripts/send-feishu.sh" <open_id> <message>`
+
+**前置检查：**
+- 检查 `~/.claude-to-im/config.env` 存在且包含 `CTI_FEISHU_APP_ID` 和 `CTI_FEISHU_APP_SECRET`。如果缺失，引导用户先运行 `setup` 或 `reconfigure`。
+- 飞书应用需要 `im:message:send_as_bot` 权限才能主动发消息给用户，且用户必须在该应用的可用范围内。
+
+**错误处理：**
+- token 获取失败 → 检查 App ID / App Secret 是否正确
+- 发送失败且返回权限错误 → 提示用户在飞书开放平台添加 `im:message:send_as_bot` 权限并重新发布应用
+- 发送失败且返回用户不可达 → 提示用户确认 open_id 是否正确，以及该用户是否在应用的可用范围内
 
 **Feishu upgrade note:** If the user upgraded from an older version of this skill and Feishu is returning permission errors (e.g. streaming cards not working, typing indicators failing, permission buttons unresponsive), the root cause is almost certainly missing permissions or callbacks in the Feishu backend. Refer the user to the "Upgrading from a previous version" section in `SKILL_DIR/references/setup-guides.md` — they need to add new scopes (`cardkit:card:write`, `cardkit:card:read`, `im:message:update`, `im:message.reactions:read`, `im:message.reactions:write_only`), add the `card.action.trigger` callback, and re-publish the app. The upgrade requires two publish cycles because adding the callback needs an active WebSocket connection (bridge must be running).
 
